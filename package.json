@@ -1,0 +1,29 @@
+{
+  "name": "web3-zeus-provider",
+  "version": "1.0.0",
+  "description": "Reliable web3 provider that uses multiple RPC API connections",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"OK!\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab-service.dreamteam.ec2-internal:blockchain/web3-zeus-provider.git"
+  },
+  "keywords": [
+    "web3",
+    "provider",
+    "Zeus",
+    "reliable",
+    "multiple",
+    "nodes",
+    "connections",
+    "rpc",
+    "apis",
+    "private",
+    "key",
+    "keys"
+  ],
+  "author": "ZitRo",
+  "license": "MIT"
+}
