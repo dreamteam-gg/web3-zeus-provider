@@ -26,3 +26,17 @@ web3.eth.getBlockNumber().then((blockNumber) => {
     console.log(blockNumber);
 });
 ```
+
+Development
+-----------
+
+Develop using local environment or Docker:
+
+```bash
+bash docker.sh
+```
+
+License
+-------
+
+[MIT](LICENSE) (c) [Nikita Savchenko](https://nikita.tk)

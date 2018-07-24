@@ -1,0 +1,9 @@
+version: "3"
+services:
+  dev:
+    build:
+      context: .
+    volumes:
+      - .:/web3-zeus-provider
+      - /web3-zeus-provider/node_modules
+    command: tail -F /dev/null # Keeps container alive
