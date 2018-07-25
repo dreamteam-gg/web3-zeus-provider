@@ -1,7 +1,7 @@
 {
   "name": "web3-zeus-provider",
   "version": "1.0.0",
-  "description": "Reliable web3 provider that uses multiple RPC API connections",
+  "description": "Reliable web3 provider that uses multiple RPC API connections and switches between them in case of failure",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha --timeout=10000"
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git@gitlab-service.dreamteam.ec2-internal:blockchain/web3-zeus-provider.git"
+  },
+  "publishConfig":{
+    "registry": "http://10.50.51.208:4873/"
   },
   "keywords": [
     "web3",
