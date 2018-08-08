@@ -124,7 +124,7 @@ describe("RPC switching tests", function() {
                 privateKeys: [
                     "FCAFC28AF87287F3AB81554C2DF38C3FCE6E2C7654DB7710243A2D52A9EDF441"
                 ],
-                onRpcProviderChange: (url, index) => callback.push(url, index)
+                onRpcProviderChange: ({ from, to, error, response }) => callback.push(from, to, error, response)
             });
             const web3 = new Web3(zeusProvider);
 
@@ -148,6 +148,7 @@ describe("RPC switching tests", function() {
             assert.equal(block, expectedBlockNumber);
             assert.equal(callback[0], "https://localhost:1111");
             assert.equal(callback[1], "https://localhost:2222");
+            assert.equal(callback[2] instanceof Error, true);
 
             handler1.done();
             handler2.done();

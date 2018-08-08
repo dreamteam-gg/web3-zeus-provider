@@ -42,35 +42,39 @@ ZeusProvider.prototype.getCurrentProvider = function () {
     return this.httpProvidersList[this.currentProvider];
 };
 
-ZeusProvider.prototype.switchToNextProvider = function () {
+ZeusProvider.prototype.switchToNextProvider = function (err, res) {
     const from = this.options.rpcApis[this.currentProvider];
     this.currentProvider = (this.currentProvider + 1) % this.httpProvidersList.length;
     if (typeof this.options.onRpcProviderChange === "function") {
-        this.options.onRpcProviderChange(from, this.options.rpcApis[this.currentProvider]);
+        this.options.onRpcProviderChange({
+            from: from,
+            to: this.options.rpcApis[this.currentProvider],
+            error: err,
+            response: res || null
+        });
     }
     return this.currentProvider;
 };
 
 ZeusProvider.prototype.send = function (payload) {
-    console.warn(`Warning! Synchronous send in httpProvider is triggered.`);
+    console.warn(`[ZeusTokenProvider] Warning! Synchronous send in httpProvider is triggered.`);
     return this.getCurrentProvider().send(payload);
 };
 
 ZeusProvider.prototype.sendAsync = function (payload, callback) {
-    
-    const request = () => this.getCurrentProvider().sendAsync(payload, handle);
-    let attempts = 1;
 
+    let attempts = 1;
     const handle = (err, res) => {
         if (err) {
             if (attempts++ >= 2 * this.httpProvidersList.length) { // Run twice along all http providers
                 return callback(err, res); // Get the error up
             }
-            this.switchToNextProvider();
+            this.switchToNextProvider(err, res);
             return setTimeout(request, 25);
         }
         callback(err, res);
     }
+    const request = () => this.getCurrentProvider().sendAsync(payload, handle);
     
     return request();
 
