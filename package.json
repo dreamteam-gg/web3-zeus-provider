@@ -25,14 +25,14 @@
     "apis",
     "private",
     "key",
-    "keys"
+    "keys",
+    "sign",
+    "offline"
   ],
   "author": "ZitRo",
   "license": "MIT",
   "dependencies": {
-    "truffle-privatekey-provider": "^0.1.0",
-    "web3-provider-engine": "^14.0.6",
-    "xmlhttprequest": "^1.8.0"
+    "web3-provider-engine": "^14.0.6"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
