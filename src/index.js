@@ -52,7 +52,7 @@ function ZeusProvider (options = {}) {
 }
 
 ZeusProvider.prototype.importAccount = function (pk) {
-    this.accounts.set(pkToAddress(pk), pk);
+    this.accounts.set(pkToAddress(pk), Buffer.from(pk, "hex"));
 };
 
 ZeusProvider.prototype.revokeAccount = function (addressOrPk) {
