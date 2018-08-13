@@ -1,6 +1,6 @@
 {
   "name": "web3-zeus-provider",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Reliable web3 provider that uses multiple RPC API connections and switches between them in case of failure",
   "main": "src/index.js",
   "scripts": {
