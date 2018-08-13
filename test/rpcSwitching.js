@@ -6,6 +6,7 @@ const nock = require("nock");
 describe("RPC switching tests", function() {
 
     const expectedBlockNumber = 100500;
+    let callbacks = [];
     const rpcs = [
         "http://localhost:1111",
         "http://localhost:2222",
@@ -13,10 +14,34 @@ describe("RPC switching tests", function() {
     ];
     let web3;
 
-    beforeEach(function () {
+    before(() => {
+        const expect = (body) => { // { jsonrpc: '2.0', id: 1, method: 'eth_getBlockByNumber', params: [] }
+            return body.method === "eth_getBlockByNumber";
+        };
+        const handle = (_, body) => ({
+            jsonrpc: "2.0",
+            id: body.id,
+            result: {
+                number: expectedBlockNumber,
+                hash: "0x0",
+                nonce: 1,
+                transactions: []
+            }
+        });
+        nock("http://localhost:1111").post("/", expect).times(1000000).reply(200, handle);
+        nock("http://localhost:2222").post("/", expect).times(1000000).reply(200, handle);
+        nock("http://localhost:3333").post("/", expect).times(1000000).reply(200, handle); 
+    });
+
+    beforeEach(() => {
         web3 = new Web3(new ZeusProvider({
-            rpcApis: rpcs
+            rpcApis: rpcs,
+            onRpcProviderChange: (res) => callbacks.push(res)
         }));
+    });
+
+    afterEach(() => {
+        web3.currentProvider.terminate();
     });
 
     function mockRpc (url, status = 200, times = 1) {
@@ -50,7 +75,7 @@ describe("RPC switching tests", function() {
         });
 
         it("Should switch to second RPC in case when first one doesn't work", async () => {
-            
+
             const handler1 = mockRpc(rpcs[0], 502);
             const handler2 = mockRpc(rpcs[1]);
             const block = await web3.eth.getBlockNumber();
@@ -115,26 +140,15 @@ describe("RPC switching tests", function() {
 
         it("Should trigger RPC changed callback on RPC change", async () => {
 
-            const callback = [];
-            const zeusProvider = new ZeusProvider({
-                rpcApis: [
-                    "https://localhost:1111",
-                    "https://localhost:2222"
-                ],
-                privateKeys: [
-                    "FCAFC28AF87287F3AB81554C2DF38C3FCE6E2C7654DB7710243A2D52A9EDF441"
-                ],
-                onRpcProviderChange: ({ from, to, error, response }) => callback.push(from, to, error, response)
-            });
-            const web3 = new Web3(zeusProvider);
+            callbacks = [];
 
             const expectedBlockNumber = 100500;
-            const handler1 = nock("https://localhost:1111")
+            const handler1 = nock("http://localhost:1111")
                 .post("/", (body) => { // { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }
                     return body.method === "eth_blockNumber";
                 })
                 .reply(502, "Bad gateway");
-            const handler2 = nock("https://localhost:2222")
+            const handler2 = nock("http://localhost:2222")
                 .post("/", (body) => { // { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }
                     return body.method === "eth_blockNumber";
                 })
@@ -146,9 +160,10 @@ describe("RPC switching tests", function() {
             const block = await web3.eth.getBlockNumber();
 
             assert.equal(block, expectedBlockNumber);
-            assert.equal(callback[0], "https://localhost:1111");
-            assert.equal(callback[1], "https://localhost:2222");
-            assert.equal(callback[2] instanceof Error, true);
+            const switched = callbacks.pop();
+            assert.equal(switched.from, "http://localhost:1111");
+            assert.equal(switched.to, "http://localhost:2222");
+            assert.equal(switched.error instanceof Error, true);
 
             handler1.done();
             handler2.done();
