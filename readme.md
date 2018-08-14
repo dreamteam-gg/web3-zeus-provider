@@ -1,5 +1,7 @@
 # Web3 Zeus Provider
 
+[![Build Status](https://travis-ci.org/ZitRos/web3-zeus-provider.svg?branch=master)](https://travis-ci.org/ZitRos/web3-zeus-provider)
+
 Reliable Web3 provider which features:
 
 + Connects to multiple RPC APIs and switches between them when some are unavailable.
