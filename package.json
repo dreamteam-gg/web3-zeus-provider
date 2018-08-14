@@ -8,10 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab-service.dreamteam.ec2-internal:blockchain/web3-zeus-provider.git"
-  },
-  "publishConfig": {
-    "registry": "http://10.50.51.208:4873/"
+    "url": "https://github.com/ZitRos/web3-zeus-provider.git"
   },
   "keywords": [
     "web3",

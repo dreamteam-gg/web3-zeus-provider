@@ -3,7 +3,16 @@
 Reliable Web3 provider which features:
 
 + Connects to multiple RPC APIs and switches between them when some are unavailable.
-+ Enables specifying private key for signing transactions.
++ Allows to specify private keys for signing transactions.
+
+Primarily made for server-side usage (as it depends on [heavy library](https://github.com/MetaMask/provider-engine)).
+
+Installation
+------------
+
+```bash
+npm install --save web3-zeus-provider
+```
 
 Usage
 -----
@@ -25,6 +34,7 @@ const zeusProvider = new ZeusProvider({
 const Web3 = require("web3");
 const web3 = new Web3(zeusProvider);
 
+// Example
 web3.eth.getBlockNumber().then((blockNumber) => {
     console.log(blockNumber);
 });
