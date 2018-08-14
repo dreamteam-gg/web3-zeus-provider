@@ -56,8 +56,16 @@ module.exports = class RpcFetchBalancerSubprovider extends SubProvider {
         // In order not to mess up with callbacks, RPC API switch is performed only if the previousRpcApi === current
         const handle = (err, res) => {
             if (err) {
-                if (err.code && err.code < 0) { // Node error codes: let the client know
-                    return end(err, res);
+                if ( // Weird way to check whether this is actually an RPC error: do not retry then
+                    !(err instanceof Error)
+                    && Object.keys(err).length === 2
+                    && new Set(Object.keys(err)).has("code")
+                    && new Set(Object.keys(err)).has("message")
+                ) {
+                    return end(
+                        new Error(`${ err.message }; original request: ${ JSON.stringify(payload, null, 4) }`),
+                        res
+                    );
                 }
                 const success = this.switchToNextRpcApi(previousRpcApi, err, res);
                 attempts++;

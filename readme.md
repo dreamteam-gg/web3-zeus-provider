@@ -19,7 +19,7 @@ const zeusProvider = new ZeusProvider({
         "FCAFC28AF87287F3AB81554C2DF38C3FCE6E2C7654DB7710243A2D52A9EDF441"
     ],
     onRpcProviderChange: function ({ from, to, error, response }) {
-        console.log(`RPC provider switched from ${ from } to ${ to }`);
+        console.log(`RPC provider switched from ${ from } to ${ to } because of ${ error }`);
     }
 });
 const Web3 = require("web3");

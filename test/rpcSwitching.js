@@ -172,4 +172,35 @@ describe("RPC switching tests", function() {
 
     });
 
+    describe("Handling errors", () => {
+
+        it("Should throw an error on RPC error", async function () {
+
+            const blockHash = "0x8533b0f58142eeb2e8003717316e568e2fc5cb14f0f4b9ec40f2e5ec53e453c0";
+            const handler1 = nock("http://localhost:1111")
+                .post("/", (body) => { // { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }
+                    return body.method === "eth_getBlockByHash" && body.params[0] === blockHash;
+                })
+                .reply(200, {
+                    "jsonrpc":"2.0",
+                    "id":1,
+                    "error": {
+                        "code": -32602,
+                        "message": "invalid argument 0: json: cannot unmarshal hex string of odd length into Go value of type common.Hash"
+                    }
+                });
+
+            try {
+                const block = await web3.eth.getBlock(blockHash);
+                assert.fail("Must throw an error");
+            } catch (e) {
+                assert.ok(true);
+            }
+
+            handler1.done();
+
+        });
+
+    });
+
 });
