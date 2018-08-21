@@ -44,10 +44,10 @@ describe("RPC switching tests", function() {
         web3.currentProvider.terminate();
     });
 
-    function mockRpc (url, status = 200, times = 1) {
+    function mockRpc (url, status = 200, times = 1, method = "eth_blockNumber") {
         return nock(url)
             .post("/", (body) => { // { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }
-                return body.method === "eth_blockNumber";
+                return method ? body.method === method : true;
             })
             .times(times)
             .reply(status, (_, body) => (status !== 200 ? "Duck." : {
@@ -198,6 +198,35 @@ describe("RPC switching tests", function() {
             }
 
             handler1.done();
+
+        });
+
+        it("Should throw an error after X not successful attempts", async function () {
+
+            const callbacks = [];
+            const rpcs = [
+                "http://localhost:1238",
+                "http://localhost:1239"
+            ];
+            const web3 = new Web3(new ZeusProvider({
+                rpcRetries: 2,
+                rpcApis: rpcs,
+                onRpcProviderChange: (res) => callbacks.push(res)
+            }));
+            mockRpc(rpcs[0], 502, 50, "eth_getBlockByHash");
+            mockRpc(rpcs[1], 502, 50, "eth_getBlockByHash");
+            mockRpc(rpcs[0], 200, 50, null);
+            mockRpc(rpcs[1], 200, 50, null);
+
+            try {
+                const block = await web3.eth.getBlock("0x8533b0f58142eeb2e8003717316e568e2fc5cb14f0f4b9ec40f2e5ec53e453d1");
+                assert.fail("Must throw an error");
+            } catch (e) {
+                assert.ok(true);
+            }
+
+            assert.equal(callbacks.length, 4);
+            web3.currentProvider.terminate();
 
         });
 
