@@ -230,6 +230,33 @@ describe("RPC switching tests", function() {
 
         });
 
+        it("Exit if all block number retrieval attempts fail", async function () {
+
+            const callbacks = [];
+            const rpcs = [
+                "http://localhost:1355",
+                "http://localhost:1399"
+            ];
+            mockRpc(rpcs[0], 502, 50, null);
+            mockRpc(rpcs[1], 502, 50, null);
+            const web3 = new Web3(new ZeusProvider({
+                rpcRetries: 2,
+                rpcApis: rpcs,
+                onRpcProviderChange: (res) => callbacks.push(res)
+            }));
+
+            try {
+                await web3.eth.getBlockNumber();
+                assert.fail("Must throw an error");
+            } catch (e) {
+                assert.ok(true);
+            }
+
+            // assert.equal(callbacks.length > 4, true);
+            web3.currentProvider.terminate();
+
+        });
+
     });
 
 });

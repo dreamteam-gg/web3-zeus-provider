@@ -15,7 +15,8 @@ function ZeusProvider (options = {}) {
     this.options = Object.assign({
         // onRpcProviderChange: ({ from, to, error, response }) => { ... },
         rpcApis: ["https://mainnet.infura.io"],
-        privateKeys: []
+        privateKeys: [],
+        _zeus: this // <SUPERDIRTYHACK>injects networkUnreachable property to Zeus Provider</SUPERDIRTYHACK>
     }, options);
 
     /**
@@ -65,8 +66,21 @@ ZeusProvider.prototype.send = function () {
     return this.engine.send.apply(this.engine, arguments);
 };
 
-ZeusProvider.prototype.sendAsync = function () {
-    this.engine.sendAsync.apply(this.engine, arguments);
+ZeusProvider.prototype.sendAsync = function (...args) {
+    // <SUPERDIRTYHACK> (described in RpcBalancerSubprovider)
+    if (typeof args[1] === "function") {
+        let fired = false;
+        const realFun = args[1];
+        const t = setInterval(() => this.networkUnreachable && hackedFun(new Error("All RPCs are unreachable, cannot complete request")), 100);
+        const hackedFun = args[1] = function (...args) {
+            if (fired) return;
+            fired = true;
+            clearInterval(t);
+            realFun.apply(this, args);
+        };
+    }
+    // </SUPERDIRTYHACK>
+    this.engine.sendAsync.apply(this.engine, args);
 };
 
 ZeusProvider.prototype.terminate = function () {

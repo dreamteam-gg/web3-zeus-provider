@@ -51,6 +51,7 @@ module.exports = class RpcFetchBalancerSubprovider extends SubProvider {
     }
 
     handleRequest (payload, next, end) {
+        // console.log("Handling", payload);
         let attempts = 1;
         let previousRpcApi;
         // In order not to mess up with callbacks, RPC API switch is performed only if the previousRpcApi === current
@@ -70,15 +71,27 @@ module.exports = class RpcFetchBalancerSubprovider extends SubProvider {
                 const success = this.switchToNextRpcApi(previousRpcApi, err, res);
                 attempts++;
                 if (success && attempts > (this.options.rpcRetries || 3) * this.rpcApis.length) {
+                    // <HACK> <INFO DESC="A super DIRTY HACK which prevents provider engine from hanging if all nodes are unavailable"/>
+                    if (this.options._zeus && (payload.method === "eth_getBlockByNumber" || payload.method === "eth_blockNumber")) {
+                        this.options._zeus.networkUnreachable = true;
+                    }
+                    // </HACK>
                     return end(err, res);
                 }
                 return setTimeout(request, this.options.rpcRetryTimeout || 25);
             }
+            // <HACK> <INFO DESC="A super DIRTY HACK which prevents provider engine from hanging if all nodes are unavailable"/>
+            if (this.options._zeus && (payload.method === "eth_getBlockByNumber" || payload.method === "eth_blockNumber")) {
+                this.options._zeus.networkUnreachable = false;
+            }
+            // </HACK>
             end(err, res);
         }
         const request = () => {
             previousRpcApi = this.currentRpcApi;
-            return this.getCurrentRpcApi().handleRequest(payload, next, handle);
+            return this.getCurrentRpcApi().handleRequest(payload, next, function () {
+                return handle.apply(this, arguments);
+            });
         };
         request();
     }
